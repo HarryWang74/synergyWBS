@@ -1,37 +1,78 @@
-import { useState } from 'react'
-
-import type { ColDef } from 'ag-grid-community'
-import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community'
-
+import React, {
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+  StrictMode,
+} from 'react'
 import { AgGridReact } from 'ag-grid-react'
-
-ModuleRegistry.registerModules([AllCommunityModule])
-// Row Data Interface
-interface IRow {
-  make: string;
-  model: string;
-  price: number;
-  electric: boolean;
-}
+import {
+  ClientSideRowModelModule,
+  ColDef,
+  ColGroupDef,
+  GetDataPath,
+  GridApi,
+  GridOptions,
+  ModuleRegistry,
+  ValidationModule,
+} from 'ag-grid-community'
+import { TreeDataModule } from 'ag-grid-enterprise'
+import { getData } from '../data/data'
+ModuleRegistry.registerModules([
+  ClientSideRowModelModule,
+  TreeDataModule,
+  ValidationModule /* Development Only */,
+])
 
 const WorkBreakDown = () => {
-  // Row Data: The data to be displayed.
-  const [rowData, setRowData] = useState<IRow[]>([
-    { make: 'Tesla', model: 'Model Y', price: 64950, electric: true },
-    { make: 'Ford', model: 'F-Series', price: 33850, electric: false },
-    { make: 'Toyota', model: 'Corolla', price: 29600, electric: false },
+  const containerStyle = useMemo(() => ({ width: '100%', height: '100%' }), [])
+  const gridStyle = useMemo(() => ({ height: '100%', width: '100%' }), [])
+  const [rowData, setRowData] = useState<any[]>(getData())
+  const [columnDefs, setColumnDefs] = useState<ColDef[]>([
+    { field: 'created' },
+    { field: 'modified' },
+    {
+      field: 'size',
+      aggFunc: 'sum',
+      valueFormatter: (params) => {
+        const sizeInKb = params.value / 1024
+        if (sizeInKb > 1024) {
+          return `${+(sizeInKb / 1024).toFixed(2)} MB`
+        } else {
+          return `${+sizeInKb.toFixed(2)} KB`
+        }
+      },
+    },
   ])
+  const defaultColDef = useMemo<ColDef>(() => {
+    return {
+      flex: 1,
+    }
+  }, [])
+  const autoGroupColumnDef = useMemo<ColDef>(() => {
+    return {
+      headerName: 'File Explorer',
+      minWidth: 280,
+      cellRendererParams: {
+        suppressCount: true,
+      },
+    }
+  }, [])
+  const getDataPath = useCallback((data) => data.path, [])
 
-  // Column Definitions: Defines & controls grid columns.
-  const [colDefs, setColDefs] = useState<ColDef<IRow>[]>([
-    { field: 'make' },
-    { field: 'model' },
-    { field: 'price' },
-    { field: 'electric' },
-  ])
   return (
-    <div style={{ width: '100%', height: '100%' }}>
-      <AgGridReact rowData={rowData} columnDefs={colDefs} />
+    <div style={containerStyle}>
+      <div style={gridStyle}>
+        <AgGridReact
+          rowData={rowData}
+          columnDefs={columnDefs}
+          defaultColDef={defaultColDef}
+          autoGroupColumnDef={autoGroupColumnDef}
+          treeData={true}
+          groupDefaultExpanded={-1}
+          getDataPath={getDataPath}
+        />
+      </div>
     </div>
   )
 }
