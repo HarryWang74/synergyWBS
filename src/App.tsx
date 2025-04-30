@@ -1,5 +1,4 @@
-import React, { StrictMode, useState } from 'react'
-import { createRoot } from 'react-dom/client'
+import { useState } from 'react'
 
 // Theme
 import type { ColDef } from 'ag-grid-community'
