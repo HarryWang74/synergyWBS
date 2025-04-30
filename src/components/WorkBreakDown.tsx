@@ -1,23 +1,18 @@
-import React, {
+import  {
   useCallback,
   useMemo,
-  useRef,
   useState,
-  StrictMode,
 } from 'react'
 import { AgGridReact } from 'ag-grid-react'
 import {
   ClientSideRowModelModule,
   ColDef,
-  ColGroupDef,
-  GetDataPath,
-  GridApi,
-  GridOptions,
   ModuleRegistry,
   ValidationModule,
 } from 'ag-grid-community'
 import { TreeDataModule } from 'ag-grid-enterprise'
 import { getData } from '../data/data'
+
 ModuleRegistry.registerModules([
   ClientSideRowModelModule,
   TreeDataModule,
@@ -31,18 +26,7 @@ const WorkBreakDown = () => {
   const [columnDefs, setColumnDefs] = useState<ColDef[]>([
     { field: 'created' },
     { field: 'modified' },
-    {
-      field: 'size',
-      aggFunc: 'sum',
-      valueFormatter: (params) => {
-        const sizeInKb = params.value / 1024
-        if (sizeInKb > 1024) {
-          return `${+(sizeInKb / 1024).toFixed(2)} MB`
-        } else {
-          return `${+sizeInKb.toFixed(2)} KB`
-        }
-      },
-    },
+    { field: 'size'},
   ])
   const defaultColDef = useMemo<ColDef>(() => {
     return {
